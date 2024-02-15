@@ -1,0 +1,56 @@
+CREATE TYPE ROLE AS ENUM ('USER', 'MODERATOR', 'ADMIN');
+CREATE TYPE FLAG AS ENUM ('NOTFOUND', 'FOUND', 'EDIT');
+
+CREATE TABLE IF NOT EXISTS accounts (
+  account_id BIGSERIAL PRIMARY KEY,
+  line_id VARCHAR(64) NOT NULL UNIQUE,
+  firstname VARCHAR(255) NOT NULL,
+  lastname VARCHAR(255) NOT NULL,
+  tel VARCHAR(15) NOT NULL UNIQUE,
+  flag FLAG NOT NULL,
+  role ROLE DEFAULT ('USER') NOT NULL,
+  is_active BOOLEAN DEFAULT true NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  deleted_at TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS alumnis (
+  student_code BIGSERIAL PRIMARY KEY,
+  firstname VARCHAR(255) NOT NULL,
+  lastname VARCHAR(255),
+  tel VARCHAR(15),
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS configurations (
+  key VARCHAR(255) PRIMARY KEY,
+  value VARCHAR(255) NOT NULL,
+  "desc" VARCHAR(255),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS qr_codes (
+  id BIGSERIAL PRIMARY KEY,
+  account_id BIGINT NOT NULL REFERENCES accounts(account_id) ON DELETE CASCADE,
+  expire_at TIMESTAMP NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS scanners (
+  mac VARCHAR(20) PRIMARY KEY,
+  "desc" VARCHAR(255),
+  is_active BOOLEAN DEFAULT true NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS usages (
+  id BIGSERIAL PRIMARY KEY,
+  qrcode_id BIGINT NOT NULL REFERENCES qr_codes(id) ON DELETE CASCADE,
+  account_id BIGINT NOT NULL REFERENCES accounts(account_id) ON DELETE CASCADE,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+INSERT INTO configurations VALUES ('Open','08:00','system open time',NOW());
+INSERT INTO configurations VALUES ('Close','22:00','system close time',NOW());
+INSERT INTO configurations VALUES ('Enable','true','system status',NOW());
