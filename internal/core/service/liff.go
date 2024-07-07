@@ -34,12 +34,14 @@ func (s liffService) GetAlumni(code int) (*dto.AlumniResponseBody, error) {
 
 	result, err := s.alumniRepo.GetById(code)
 	if err != nil {
-		log.Panic(err)
-		alumni := dto.AlumniResponseBody{
-			InAlumni:    false,
-			StudentCode: strconv.Itoa(code),
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			alumni := dto.AlumniResponseBody{
+				InAlumni:    false,
+				StudentCode: strconv.Itoa(code),
+			}
+			return &alumni, nil
 		}
-		return &alumni, nil
+		return nil, errors.New("ไม่สามารถตรวจสอบรหัสนักศีกษาได้")
 	}
 
 	alumni := dto.AlumniResponseBody{
